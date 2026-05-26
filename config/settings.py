@@ -16,41 +16,41 @@ MAX_TOKENS = 1024
 
 def get_model():
     """
-    Build and return the OpenAIChatCompletionsModel.
+    Build and return the OpenAIChatCompletionsModel using Groq API.
     Called lazily (only when agent needs it) so .env
     is guaranteed to be loaded before AsyncOpenAI is created.
     """
     load_dotenv()  # safe to call multiple times — idempotent
 
-    # ✅ FIX: Suppress "OPENAI_API_KEY is not set" tracing warnings
+    # Suppress "OPENAI_API_KEY is not set" tracing warnings
     if not os.getenv("OPENAI_API_KEY"):
         os.environ["OPENAI_API_KEY"] = "dummy-not-used"
 
     from openai import AsyncOpenAI
     from agents.models.openai_chatcompletions import OpenAIChatCompletionsModel
 
-    api_key = os.getenv("OPENROUTER_API_KEY", "").strip()
+    api_key = os.getenv("GROQ_API_KEY", "").strip()
     if not api_key:
         raise EnvironmentError(
-            "OPENROUTER_API_KEY not found.\n"
+            "GROQ_API_KEY not found.\n"
             "Create a .env file in the project root:\n"
-            "  OPENROUTER_API_KEY=sk-or-xxxxxxxxxx"
+            "  GROQ_API_KEY=gsk_xxxxxxxxxx"
         )
 
     client = AsyncOpenAI(
         api_key=api_key,
-        base_url="https://openrouter.ai/api/v1",
+        base_url="https://api.groq.com/openai/v1",
     )
 
     return OpenAIChatCompletionsModel(
-        model=os.getenv("MODEL", "openai/gpt-3.5-turbo"),
+        model=os.getenv("MODEL", "llama-3.3-70b-versatile"),
         openai_client=client,
     )
 
 
 def get_model_settings():
     """
-    ✅ FIX: max_tokens must be passed via ModelSettings to Runner,
+    max_tokens must be passed via ModelSettings to Runner,
     NOT as a kwarg to OpenAIChatCompletionsModel.
     Returns a ModelSettings object with max_tokens=1024.
     """
